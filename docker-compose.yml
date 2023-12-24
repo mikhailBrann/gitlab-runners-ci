@@ -1,0 +1,38 @@
+version: '3.5'
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    hostname: 127.127.127.127 # ip your server
+    container_name: gitlab
+    restart: unless-stopped
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+        external_url 'https://your-domen.ru:443'
+    ports:
+      - "443:443"
+      - "80:80"
+      - "465:465"
+      - "2224:22"
+    volumes:
+      - ./data/etc/gitlab:/etc/gitlab
+      - ./data/var/opt/gitlab:/var/opt/gitlab
+      - ./data/var/log/gitlab:/var/log/gitlab
+    networks:
+      - gitlab_net
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    restart: always
+    container_name: gitlab-runner
+    hostname: gitlab-runner
+    depends_on:
+      - gitlab
+    volumes:
+      - ./data/etc/gitlab-runner:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitlab_net
+
+networks:
+  gitlab_net:
